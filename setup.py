@@ -8,6 +8,9 @@ setup(
     python_requires=">=3.11",
     install_requires=[
         "pyyaml",
+        "aiohttp",
+        "docker",
+        "nvidia-ml-py",
     ],
     entry_points={
         "console_scripts": [
