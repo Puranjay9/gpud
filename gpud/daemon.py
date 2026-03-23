@@ -212,7 +212,7 @@ class Deployment:
             "workers":          [w.to_dict() for w in self.workers],
         } 
 
-class GPUDDaemon:
+class GpudDaemon:
     def __init__(self):
         self.deployments: dict[str, Deployment] = {}
         self.scaler = AutoScaler()
@@ -253,6 +253,10 @@ class GPUDDaemon:
     def _handle_signal(self, sig, frame):
         log.info(f"signal {sig}, shutting down …")
         self._running.clear()
+    
+    def get_events(self, limit: int = 50) -> list:
+        """Get recent events from the event log."""
+        return self._events[-limit:] if self._events else []
     
     def _shutdown(self):
         log.info("shutting down …")
@@ -311,7 +315,7 @@ class GPUDDaemon:
             "pid": os.getpid(),
             "updated_at": _now(),
             "deployments": {n: d.to_dict() for n, d in self.deployments.items()},
-            "gpu_allocator": gpu_allocator.status()
+            "gpu_allocator": {"allocated": self.gpu_allocator._allocated if hasattr(self, 'gpu_allocator') else {}}
         }
 
         DAEMON_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -361,6 +365,8 @@ class GPUDDaemon:
                 log.debug(f"dispatch: {data[:120]}")
                 try:
                     msg = json.loads(data.strip())
+                    resp = self._dispatch(msg)
+                    conn.sendall((json.dumps(resp) + "\n").encode())
                 except Exception as e:
                     log.error(f"JSON parse error: {e} — raw: {data[:200]}")
                     conn.sendall((json.dumps({"error": "json parse: " + str(e)}) + "\n").encode())
@@ -425,7 +431,7 @@ class GPUDDaemon:
                         nginx.stop()
                         dep = self._create_deployment(n,c)
                         self.registry.save(n,c)
-                        self._emit("redeploy", {"name", n})
+                        self._emit("redeploy", {"name": n})
                     
                     for _ in range(max(c.min_scale, 1)):
                         dep.spawn_worker()

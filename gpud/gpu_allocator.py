@@ -21,7 +21,7 @@ class GPUAllocator:
     def allocate(self, worker_id: str, count: int, vram_required_gb: float = 0) -> list[int]:
 
         with self._lock:
-            in_use = {idx for idxs in self._allocated.values() for idx in idx }
+            in_use = {idx for idxs in self._allocated.values() for idx in idxs}
 
             if vram_required_gb > 0 and nvml_available() and self._total > 0:
                 candidates = []
@@ -73,7 +73,7 @@ class GPUAllocator:
             log.debug(f"allocated GPU(s) {chosen} → {worker_id}")
             return chosen
     
-    def release(self, worker_id: int):
+    def release(self, worker_id: str):
         with self._lock:
             released = self._allocated.pop(worker_id, [])
             if released:
