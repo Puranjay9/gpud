@@ -28,7 +28,7 @@ if [ -d "$INSTALL_DIR" ]; then
     git pull
 else
     echo "📦 Cloning repository..."
-    git clone https://github.com/yourname/gpud.git "$INSTALL_DIR"
+    git clone https://github.com/Puranjay9/gpud.git "$INSTALL_DIR"
     cd "$INSTALL_DIR"
 fi
 
