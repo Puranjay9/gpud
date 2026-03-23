@@ -84,6 +84,7 @@ class RequestWatcher:
         app = web.Application()
         app.router.add_route("*", "/{path_info:.*}", self._handle)
         self._runner = web.AppRunner(app)
+        await self._runner.setup()
         site = web.TCPSite(self._runner, "0.0.0.0", self.watcher_port)
         await site.start()
         while True:

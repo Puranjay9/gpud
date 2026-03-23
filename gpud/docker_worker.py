@@ -20,11 +20,13 @@ from typing import Optional
 from .gpu_metrics import collector as gpu_collector, nvml_available
 from .logger import log
 
+_docker_ok = False
 
 try: 
    import docker as docker_sdk
+   _docker_ok = True
 except ImportError:
-   _docker_ok = False    
+   pass    
 
 # Port Allocator
 
