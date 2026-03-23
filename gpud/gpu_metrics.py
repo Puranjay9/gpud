@@ -44,7 +44,7 @@ class GPUInfo:
     
     @property
     def total_mem_gb(self) -> float:
-        return round(self.total_mem_gb/ 1024, 1)
+        return round(self.total_mem_mb / 1024, 1)
     
     @property
     def vram_pct(self) -> float:
@@ -79,7 +79,8 @@ class GPUCollector:
                 try:
                     result.append(self._read(idx, handle))
                 except Exception:
-                    return None    
+                    pass
+        return result    
 
     def gpu(self, index: int) -> Optional[GPUInfo]:
         if not _nvml_ok or index not in self._handles:

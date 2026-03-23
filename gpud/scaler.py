@@ -59,9 +59,9 @@ class AutoScaler:
                 return active
             self._last_scale_up[name] = now
         
-        elif desired > active and active > 0:
-            last_down = self._last_scale_up.get(name)
-            if now - last_up < scale_up_cooldown:
+        elif desired < active and active > 0:
+            last_down = self._last_scale_down.get(name, 0)
+            if now - last_down < scale_down_cooldown:
                 return active
             self._last_scale_down[name] = now
 

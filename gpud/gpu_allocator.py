@@ -30,8 +30,8 @@ class GPUAllocator:
                     g = collector.gpu(i)
                     if not g:
                         continue
-                    free_mb = g.total_mem_mb - g.used_mem_gb
-                    if free_mb >+ required_mb:
+                    free_mb = g.total_mem_mb - g.used_mem_mb
+                    if free_mb >= required_mb:
                         candidates.append((free_mb, i))
                 
                 candidates.sort(reverse=True)
@@ -60,7 +60,7 @@ class GPUAllocator:
                         f"have {len(available)} free out of {max(self._total, 1)}"
                     )
             else: 
-                available = [0] if 0 not in in_use else[]
+                available = [0] if 0 not in in_use else []
             
             if len(available) < count:
                 raise RuntimeError(
@@ -78,4 +78,7 @@ class GPUAllocator:
             released = self._allocated.pop(worker_id, [])
             if released:
                 log.debug(f"released GPU(s) {released} from {worker_id}")
+
+
+allocator = GPUAllocator()
 

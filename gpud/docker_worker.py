@@ -131,7 +131,7 @@ class DockerWorker:
       return self.state not in ("stopped", "error")
    
    def endpoint(self) -> str:
-      return f"http:/127.0.0.1:{self.host_port}"
+      return f"http://127.0.0.1:{self.host_port}"
    
    # Lifecycle
    def _lifecycle(self):
@@ -182,7 +182,7 @@ class DockerWorker:
       try:
          
          try:
-            old = self._client_container.get(container_name)
+            old = self._client.containers.get(container_name)
             log.info(f"[{self.worker_id}] removing stale container {container_name}")
             old.remove(force=True)
          except docker_sdk.errors.NotFound:
@@ -331,7 +331,7 @@ class DockerWorker:
       if not self.container_id:
          return 
       try: 
-         c = self.containers.get(self.container_id)
+         c = self._client.containers.get(self.container_id)
          status = c.status
          if status in ("exited", "dead"):
             logs = c.logs(tail=20).decode(errors="replace")

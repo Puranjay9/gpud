@@ -50,7 +50,7 @@ class RequestWatcher:
 
         # asyncio.Event is created in _run_loop once the event loop exists
         self._worker_ready: Optional[asyncio.Event] = None
-        self._loop: Optional[asyncio.Event] = None
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._runner: Optional[web.AppRunner] = None
         self._thread: Optional[threading.Thread] = None
 
@@ -82,7 +82,7 @@ class RequestWatcher:
     
     async def _serve(self):
         app = web.Application()
-        app.rounter.add_route("*", "/{path_info:.*}", self._handle)
+        app.router.add_route("*", "/{path_info:.*}", self._handle)
         self._runner = web.AppRunner(app)
         site = web.TCPSite(self._runner, "0.0.0.0", self.watcher_port)
         await site.start()

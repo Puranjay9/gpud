@@ -130,7 +130,7 @@ class DeploymentConfig:
         cfg.validate()
         return cfg
 
-    def valdiate(self):
+    def validate(self):
         errors = []
         if not self.image:
             errors.append("'image' is required")

@@ -38,12 +38,12 @@ class RPSTracker:
             daemon=True,
             name=f"rps-{self.name}"
         )
-        self._thread.start
+        self._thread.start()
 
     def stop(self):
         self._running.clear()
     
-    def record_requests(self):
+    def record_request(self):
         with self._lock:
             self._timestamps.append(time.time())
 

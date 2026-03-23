@@ -134,7 +134,7 @@ class Deployment:
     
     def tick(self, scaler: AutoScaler):
         with self._lock:
-            dead = [w for w in self.workres if not w.is_alive()]
+            dead = [w for w in self.workers if not w.is_alive()]
             for w in dead:
                 gpu_allocator.release(w.worker_id)
                 self.workers.remove(w)
@@ -166,9 +166,9 @@ class Deployment:
             elif delta < 0:
                 idle = sorted(
                     [w for w in self.workers if w.state == 'ready'],
-                    key = lambda w: w.request_served
+                    key = lambda w: w.requests_served
                 )
-                for w in idle[abs:(delta)]:
+                for w in idle[:abs(delta)]:
                     self.drain_worker(w)
                 if idle[:abs(delta)]:
                     self.status = "scaling"
@@ -287,7 +287,7 @@ class GPUDDaemon:
                 return {"error": f"'{name}' not found"}
             self.deployments.pop(name).shutdown()
             self.registry.delete(name)
-            self._emit("delete", {"name", name})
+            self._emit("delete", {"name": name})
             return {"ok": True, "message": f"'{name}' deleted"}
     
     def list_deployments(self) -> list:
@@ -422,7 +422,7 @@ class GPUDDaemon:
                         if n in self.deployments:
                             self.deployments[n].shutdown()
                         
-                        nginx.remove_deployment(n)
+                        nginx.stop()
                         dep = self._create_deployment(n,c)
                         self.registry.save(n,c)
                         self._emit("redeploy", {"name", n})
@@ -435,7 +435,7 @@ class GPUDDaemon:
                 except Exception as e:
                     log.error(f"[{n}] redeploy failed: {e}")
             
-            threading.Thread(target=_bg_redeploy, args={name, cfg}, daemon = True, name = f"redeploy-{name}").start()
+            threading.Thread(target=_bg_redeploy, args=(name, cfg), daemon = True, name = f"redeploy-{name}").start()
             return {"ok": True, "name": name, "message": f"'{name}' redeploy queued"}
         elif cmd == "delete":
             return self.delete(msg["name"])

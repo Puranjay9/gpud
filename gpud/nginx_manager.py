@@ -180,7 +180,7 @@ class NginxManager:
             srv_lines = "\n        ".join(f"server {h}:{p};" for h, p in servers)
 
             upstream_blocks.append(f"""
-                    upstream{up_name} {{
+                    upstream {up_name} {{
                         least_conn;
                         keepalive 32;
                         {srv_lines}
@@ -188,8 +188,8 @@ class NginxManager:
                 """)
             
             server_blocks.append(f"""
-                server{{
-                    listen {pub_port}
+                server {{
+                    listen {pub_port};
                     access_log {NGINX_LOGS}/access.log combined;
                     error_log  {NGINX_LOGS}/error.log warn;
 
@@ -289,7 +289,7 @@ class NginxManager:
             log.warn("nginx config not written yet — skipping start")
             return
 
-        with self._start._lock:
+        with self._start_lock:
             if self._is_running():
                 log.debug("nginx already running — skipping duplicate start")
                 return 
