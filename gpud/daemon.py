@@ -148,7 +148,7 @@ class Deployment:
             self.status = "scaling"
             self.spawn_worker()
         else:
-            desired = scaler.desirted_replicas(
+            desired = scaler.desired_replicas(
                 rps=rps, ready=ready, active=active,
                 min_scale=self.cfg.min_scale, max_scale=self.cfg.max_scale,
                 name=self.name,

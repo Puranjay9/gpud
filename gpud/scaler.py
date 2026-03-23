@@ -13,7 +13,7 @@ class AutoScaler:
         self._last_scale_up: dict[str, float] = {}
         self._last_scale_down:  dict[str, float] = {}
     
-    def desirted_replicas(
+    def desired_replicas(
         self, 
         rps: float,
         ready: int,

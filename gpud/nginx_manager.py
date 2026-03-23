@@ -18,6 +18,8 @@ import threading
 import time
 from typing import Optional
 
+from .logger import log
+
 NGINX_PREFIX = pathlib.Path("/tmp/gpud-nginx")
 NGINX_CONF = NGINX_PREFIX / "nginx.conf"
 NGINX_PIDFILE = NGINX_PREFIX / "nginx.pid"

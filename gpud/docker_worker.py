@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from .gpu_metrics import collector as gpu_collector, nvml_available
+from .logger import log
 
 
 try: 
@@ -289,7 +290,7 @@ class DockerWorker:
       while self.state == "draining" and time.time() < deadline:
          time.sleep(0.5)   
 
-   def _stop_conatiner(self):
+   def _stop_container(self):
       if not self.container_id:
          return 
       
@@ -304,7 +305,7 @@ class DockerWorker:
       finally: 
          self.container_id = None      
 
-   def _refersh_gpu_metrics(self):
+   def _refresh_gpu_metrics(self):
       if not nvml_available() or not self.gpu_indices:
          return 
       gpus = []
