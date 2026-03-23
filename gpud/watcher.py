@@ -22,6 +22,8 @@ from typing import Optional, Callable
 import aiohttp
 from aiohttp import web
 
+from .logger import log
+
 
 QUEUE_TIMEOUT = 300
 

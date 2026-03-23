@@ -28,7 +28,7 @@ class RPSTracker:
         self._timestamps: deque[float] = deque()
         self._log_pos = 0 
         self._running = threading.Event()
-        self._thread  = threading.Thread | None = None
+        self._thread: threading.Thread | None = None
 
 
     def start(self):
