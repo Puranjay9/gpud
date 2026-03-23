@@ -42,7 +42,7 @@ class _PortPool:
 
 port_pool = _PortPool(base = 9000)      
 
-class DcokerWorker: 
+class DockerWorker: 
    """
     A single GPU replica - 1 docker container
     
