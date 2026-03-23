@@ -42,6 +42,7 @@ class Deployment:
         self.status  = "deploying"
         self.created_at = _now()
         self._counter = 0
+        self._desired_replicas = 0  # Track desired count
         self._lock = threading.Lock()
         self._pub_port = nginx.register_deployment(name, cfg.port)
         self._rps = RPSTracker(name)
@@ -159,6 +160,7 @@ class Deployment:
             )
 
             delta = desired - active
+            self._desired_replicas = desired  # Track for display
             if delta > 0:
                 self.status = "scaling"
                 for _ in range(delta):
@@ -202,7 +204,7 @@ class Deployment:
             "endpoint":   pub,
             "created_at": self.created_at,
             "replicas": {
-                "desired": self.cfg.max_scale,
+                "desired": self._desired_replicas,
                 "ready":   self.ready_count(),
                 "active":  self.active_count(),
             },
@@ -315,7 +317,6 @@ class GpudDaemon:
             "pid": os.getpid(),
             "updated_at": _now(),
             "deployments": {n: d.to_dict() for n, d in self.deployments.items()},
-            "gpu_allocator": {"allocated": self.gpu_allocator._allocated if hasattr(self, 'gpu_allocator') else {}}
         }
 
         DAEMON_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)

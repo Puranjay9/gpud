@@ -210,11 +210,11 @@ class NginxManager:
                 return 
             
             config = f"""
-                worker_process auto;
+                worker_processes auto;
                 error_log {NGINX_LOGS}/error.log warn;
                 pid {NGINX_PIDFILE};
 
-                events{{
+                events {{
                     worker_connections 1024;
                     use epoll;
                 }}
