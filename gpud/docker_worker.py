@@ -160,13 +160,14 @@ class DockerWorker:
       self.state = "starting"
       self.started_at = _now()
       
-      #Build GPU device request 
+      # Build GPU device request using correct docker-py API
       gpu_str = ",".join(str(i) for i in self.gpu_indices)
       device_requests = [
-         docker_sdk.types.DeviceRequests(
-            device_ids=[gpu_str],
-            capabilities=[["gpu"]]
-         )
+         {
+            "Driver": "nvidia",
+            "Capabilities": ["gpu"],
+            "DeviceIDs": [str(i) for i in self.gpu_indices]
+         }
       ]
 
       container_name =  f"gpud-{self.worker_id}"
