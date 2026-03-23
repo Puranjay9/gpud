@@ -60,7 +60,7 @@ class GPUCollector:
 
     def __init__(self):
         self._lock = threading.Lock()
-        self._handles = dict[int, object] = {}
+        self._handles: dict[int, object] = {}
         if _nvml_ok:
             count = pynvml.nvmlDeviceGetCount()
             for i in range(count):
