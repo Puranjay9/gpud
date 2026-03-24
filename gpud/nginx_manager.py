@@ -48,8 +48,8 @@ class NginxManager:
 
             for d in ("client-body", "proxy", "fastcgi", "uwsgi", "scgi"):
                 (NGINX_PREFIX / d).mkdir(parents=True, exist_ok=True)
-                self._stop_stale()
-                log.info("Nginx load balancer available")
+            self._stop_stale()
+            log.info("Nginx load balancer available")
         else:
             log.warn("nginx not found — per-worker direct endpoints will be used instead")
 
@@ -153,10 +153,14 @@ class NginxManager:
 
         try:
             subprocess.run(
+                ["pkill", "-TERM", "-f", f"nginx.*{NGINX_PREFIX}"],
+                capture_output=True, timeout=5
+            )
+            time.sleep(1.5) # Give it time to terminate workers
+            subprocess.run(
                 ["pkill", "-9", "-f", f"nginx.*{NGINX_PREFIX}"],
                 capture_output=True, timeout=5
             )
-            time.sleep(0.3) 
         except Exception:
             pass
         
