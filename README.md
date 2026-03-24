@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+# gpud
 
 ```
    ██████╗ ██████╗ ██╗   ██╗██████╗
@@ -16,8 +16,6 @@ Scale-to-zero · Auto-scaling · OpenAI-compatible API · Cold-start Buffering
 ![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Linux%20(NVIDIA)-orange)
-
-</div>
 
 ---
 
@@ -52,8 +50,7 @@ Think of it as a single-node, self-hosted alternative to managed GPU serverless 
 | **Python** | 3.11 or higher |
 | **Other** | `nginx`, `git`, `pip3` |
 
-> [!NOTE]
-> gpud currently supports **Linux with NVIDIA GPUs only**. macOS, Windows (WSL2), and AMD GPUs are not supported.
+> **Note:** gpud currently supports **Linux with NVIDIA GPUs only**. macOS, Windows (WSL2), and AMD GPUs are not supported.
 
 ---
 
@@ -205,7 +202,7 @@ gpud init    [--name N]    Generate a starter deployment YAML
 
 ```
                     ┌─────────────────────────────────────┐
-  curl/SDK ────▶    │           Nginx (:8000)              │
+  curl/SDK ────►    │           Nginx (:8000)              │
                     │         load balancer                │
                     └────────────┬────────────────────────┘
                                  │
@@ -282,8 +279,7 @@ hey -n 120 -c 10 -t 300 -m POST \
 
 ## Limitations & MVP Scope
 
-> [!IMPORTANT]
-> gpud is an **MVP / proof-of-concept**. It demonstrates the core serverless GPU scaling pattern but is not production-ready.
+> **Important:** gpud is an **MVP / proof-of-concept**. It demonstrates the core serverless GPU scaling pattern but is not production-ready.
 
 ### Current Limitations
 
@@ -354,7 +350,6 @@ MIT
 
 ---
 
-<div align="center">
+<p align="center">
   <sub>Built as an MVP to demonstrate serverless GPU scaling concepts.</sub>
-</div>
-]]>
+</p>
