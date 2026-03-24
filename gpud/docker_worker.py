@@ -163,11 +163,11 @@ class DockerWorker:
       # Build GPU device request using correct docker-py API
       gpu_str = ",".join(str(i) for i in self.gpu_indices)
       device_requests = [
-         {
-            "Driver": "nvidia",
-            "Capabilities": ["gpu"],
-            "DeviceIDs": [str(i) for i in self.gpu_indices]
-         }
+         docker_sdk.types.DeviceRequest(
+            driver="nvidia",
+            capabilities=[["gpu"]],
+            device_ids=[str(i) for i in self.gpu_indices]
+         )
       ]
 
       container_name =  f"gpud-{self.worker_id}"
