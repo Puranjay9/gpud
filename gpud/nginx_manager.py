@@ -134,9 +134,23 @@ class NginxManager:
         except Exception as e:
             log.warn(f"nginx stop error: {e}")
 
+        # Also kill by port as a fallback — nginx -s stop can silently fail
+        self._kill_by_ports()
+        self._wait_ports_free()
+
 
     def _stop_stale(self):
-        "stops any nginx left over fro last daemon run"
+        """Stop any nginx left over from a previous daemon run."""
+        # 1. Try graceful stop via nginx -s
+        try:
+            subprocess.run(
+                ["nginx", "-p", str(NGINX_PREFIX), "-s", "stop"],
+                capture_output=True, timeout=5
+            )
+        except Exception:
+            pass
+
+        # 2. Kill by pidfile
         if NGINX_PIDFILE.exists():
             try:
                 pid = int(NGINX_PIDFILE.read_text().strip())
@@ -147,27 +161,60 @@ class NginxManager:
                         time.sleep(0.2)
                     except ProcessLookupError:
                         break
-                log.info("stopped stale nginx")
+                log.info("stopped stale nginx (pidfile)")
             except Exception:
                 pass
 
+        # 3. Kill by process name pattern
         try:
             subprocess.run(
                 ["pkill", "-TERM", "-f", f"nginx.*{NGINX_PREFIX}"],
                 capture_output=True, timeout=5
             )
-            time.sleep(1.5) # Give it time to terminate workers
+            time.sleep(1.0)
             subprocess.run(
                 ["pkill", "-9", "-f", f"nginx.*{NGINX_PREFIX}"],
                 capture_output=True, timeout=5
             )
         except Exception:
             pass
-        
+
+        # 4. Kill anything still bound to our ports (catches orphan workers)
+        self._kill_by_ports()
+
+        # 5. Clean up pidfile
         try:
             NGINX_PIDFILE.unlink(missing_ok=True)
         except Exception:
             pass
+
+        # 6. Wait until ports are actually free
+        self._wait_ports_free()
+
+    def _kill_by_ports(self):
+        """Kill any process bound to our deployment ports using fuser."""
+        for port in self._ports.values():
+            try:
+                subprocess.run(
+                    ["fuser", "-k", f"{port}/tcp"],
+                    capture_output=True, timeout=5
+                )
+            except Exception:
+                pass
+
+    def _wait_ports_free(self, timeout: float = 3.0):
+        """Wait until all deployment ports are free to bind."""
+        import socket
+        deadline = time.time() + timeout
+        for port in self._ports.values():
+            while time.time() < deadline:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                    try:
+                        s.bind(("0.0.0.0", port))
+                        break  # port is free
+                    except OSError:
+                        time.sleep(0.2)
 
     def _write_config(self):
         upstream_blocks = []
