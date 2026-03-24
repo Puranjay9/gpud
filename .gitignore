@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+*.whl
+*.manifest
+*.spec
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+
+# gpud runtime state
+*.pid
+*.state
+daemon.state
+
+# Docker build artifacts
+model-servers/**/Dockerfile.bak
+
+# Logs
+*.log
+logs/
+
+# Secrets (never commit)
+secrets/
