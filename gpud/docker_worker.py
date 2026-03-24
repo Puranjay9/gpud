@@ -34,6 +34,7 @@ class _PortPool:
    """ Thread-safe sequential port allocator starting at base """
 
    def __init__(self, base: int = 9000):
+      self._base = base
       self._next = base
       self._lock = threading.Lock()
 
@@ -42,6 +43,11 @@ class _PortPool:
          p = self._next
          self._next += 1
          return p    
+
+   def reset(self):
+      """Reset port counter back to base. Call on daemon restart."""
+      with self._lock:
+         self._next = self._base
 
 port_pool = _PortPool(base = 9000)      
 
@@ -298,7 +304,7 @@ class DockerWorker:
          return 
       
       try: 
-         c = self._client.container.get(self.container_id)
+         c = self._client.containers.get(self.container_id)
          log.info(f"[{self.worker_id}] stopping container {self.container_id[:12]} …")
          c.stop(timeout=10)
       except docker_sdk.errors.NotFound:
@@ -365,6 +371,28 @@ class DockerWorker:
             "temp_c":           round(self.temp_c, 1),
             "power_w":          round(self.power_w, 1),
         }
+
+   @staticmethod
+   def cleanup_stale_containers():
+      """
+      Remove all leftover gpud-* containers from previous daemon runs.
+      Call this on daemon startup before restoring deployments.
+      """
+      if not _docker_ok:
+         return
+      try:
+         client = docker_sdk.from_env()
+         containers = client.containers.list(all=True, filters={"name": "gpud-"})
+         for c in containers:
+            try:
+               log.info(f"[cleanup] removing stale container {c.name} ({c.short_id})")
+               c.remove(force=True)
+            except Exception as e:
+               log.warn(f"[cleanup] failed to remove {c.name}: {e}")
+         if containers:
+            log.info(f"[cleanup] removed {len(containers)} stale container(s)")
+      except Exception as e:
+         log.warn(f"[cleanup] docker cleanup failed: {e}")
 
 
 def _now() -> str:

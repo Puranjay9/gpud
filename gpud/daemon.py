@@ -230,6 +230,10 @@ class GpudDaemon:
         _write_pidfile()
         self._running.set()
 
+        # Clean up leftover containers and reset ports from previous runs
+        DockerWorker.cleanup_stale_containers()
+        port_pool.reset()
+
         for name, cfg in self.registry.load_all().items():
             log.info(f"restoring [{name}]")
             self._create_deployment(name, cfg)
