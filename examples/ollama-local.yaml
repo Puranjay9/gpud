@@ -1,0 +1,60 @@
+# gpud deployment — Ollama LLM (best for local NVIDIA GPU)
+# Works on: RTX 3060 (8GB+), RTX 3070/4070/4090, any A-series
+#
+# STEP 1 — build the image:
+#   cd model-servers/ollama
+#   docker build -t gpud-ollama:latest .
+#
+# STEP 2 — store your HuggingFace token (if needed):
+#   mkdir -p ~/.gpud/secrets
+#   echo "hf_YOUR_TOKEN" > ~/.gpud/secrets/huggingface-token
+#
+# STEP 3 — deploy:
+#   gpud daemon start
+#   gpud deploy --config examples/ollama-local.yaml
+
+image: gpud-ollama:latest
+name: ollama-llm
+
+gpu_type: rtx-local     # just a label — actual GPU picked by allocator
+gpus: 1
+port: 8000
+
+# scale-to-zero: replica starts when request arrives, shuts down after idle
+min_scale: 0
+max_scale: 2           # bump to 2 if you have 2 GPUs
+
+concurrency: 2
+timeout: 120
+
+cpu: "4"
+memory: "8g"           # Docker memory limit
+
+cloud: local
+region: local
+
+env:
+  MODEL_NAME: llama3.2         # any model in `ollama list`
+  PORT: "8000"
+  OLLAMA_HOST: "0.0.0.0:11434"
+
+readiness:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 30      # ollama needs time to load model weights
+  periodSeconds: 10
+  failureThreshold: 12         # allow up to 2 min for first cold start
+
+scaling:
+  metric: rps
+  target: 2                    # scale up when >2 RPS/replica (LLM is slow)
+  scale_up_cooldown: 30
+  scale_down_cooldown: 200     # keep warm for 5 min after last request
+
+# Model weight cache
+# Persists the model to disk so cold-starts load from disk (~10s)
+# instead of re-downloading every time (~3-10 min).
+# Auto-defaults to ~/.gpud/model-cache/<deployment-name> if omitted.
+model_cache_enabled: true
+# model_cache_dir: /mnt/fast-ssd/model-cache   # optional: override path
